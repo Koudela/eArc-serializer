@@ -1,0 +1,29 @@
+{
+    "name": "earc/serializer",
+    "description": "eArc - the explicit architecture framework - serializer component",
+    "type": "library",
+    "license": "MIT",
+    "version": "0.0",
+    "authors": [
+        {
+            "name": "Thomas Koudela",
+            "email": "thomas@koudela.net"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable" : true,
+    "require": {
+        "php": "^7.2",
+        "earc/di": "^2.4",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4" : {
+            "eArc\\Serializer\\" : "src/",
+            "eArc\\SerializerTests\\" : "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.5"
+    }
+}
