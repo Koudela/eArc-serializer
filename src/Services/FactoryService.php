@@ -17,6 +17,7 @@ use eArc\Serializer\Services\Interfaces\FactoryServiceInterface;
 use eArc\Serializer\Api\Interfaces\SerializerInterface;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionProperty;
 
 class FactoryService implements FactoryServiceInterface
 {
@@ -38,11 +39,28 @@ class FactoryService implements FactoryServiceInterface
 
     public function initObject(string $fQCN): object
     {
-        return $this->getReflectionClass($fQCN)->newInstanceWithoutConstructor();
+        try {
+            return $this->getReflectionClass($fQCN)->newInstanceWithoutConstructor();
+        } catch (ReflectionException $e) {
+            throw new SerializeException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     public function attachProperties(object $object, array $rawContent): object
     {
+        $parent = get_class($object);
+
+        while ($parent = get_parent_class($parent)) {
+            $reflectionProperties = (new ReflectionClass($parent))->getProperties(ReflectionProperty::IS_PRIVATE);
+            foreach ($reflectionProperties as $reflectionProperty) {
+                $name = $reflectionProperty->getName();
+                if (array_key_exists($name, $rawContent)) {
+                    $reflectionProperty->setAccessible(true);
+                    $reflectionProperty->setValue($object, $this->deserializeRawValue($object, $rawContent[$name]));
+                }
+            }
+        }
+
         $reflectionClass = $this->getReflectionClass(get_class($object));
 
         foreach ($reflectionClass->getProperties() as $reflectionProperty) {

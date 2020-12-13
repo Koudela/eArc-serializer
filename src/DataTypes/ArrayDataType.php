@@ -21,7 +21,7 @@ class ArrayDataType implements DataTypeInterface
         return is_array($propertyValue);
     }
 
-    public function serialize(?object $object, $propertyName, $propertyValue)
+    public function serialize(?object $object, $propertyName, $propertyValue): array
     {
         $serialized = [];
 
@@ -41,7 +41,7 @@ class ArrayDataType implements DataTypeInterface
         return $type === 'array';
     }
 
-    public function deserialize(?object $object, string $type, $value)
+    public function deserialize(?object $object, string $type, $value): array
     {
         $deserialized = [];
 

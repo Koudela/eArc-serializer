@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace eArc\SerializerTests;
 
+use DateTime;
+
 class A
 {
     public $null1 = null;
@@ -26,6 +28,10 @@ class A
     protected $float2 = 0.2;
     private $float3 = 0.3;
 
+    public $datetime1;
+    protected $datetime2;
+    private $datetime3;
+
     public $array1 = [0 => true];
     protected $array2 = ['key' => 4.5];
     private $array3 = ['nested' => [42 => ['even deeper']]];
@@ -35,5 +41,8 @@ class A
     public function __construct()
     {
         $this->dynamic = 'very dynamic';
+        $this->datetime1 = new DateTime();
+        $this->datetime2 = new DateTime();
+        $this->datetime3 = new DateTime();
     }
 }

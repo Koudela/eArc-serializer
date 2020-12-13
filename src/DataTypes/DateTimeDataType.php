@@ -10,44 +10,40 @@
 
 namespace eArc\Serializer\DataTypes;
 
-use eArc\Serializer\Services\FactoryService;
+use DateTime;
+use DateTimeZone;
 use eArc\Serializer\DataTypes\Interfaces\DataTypeInterface;
-use eArc\Serializer\Services\SerializeService;
+use eArc\Serializer\Exceptions\SerializeException;
+use Exception;
 
-class ObjectDataType implements DataTypeInterface
+class DateTimeDataType implements DataTypeInterface
 {
     public function isResponsibleForSerialization(?object $object, $propertyName, $propertyValue): bool
     {
-        return is_object($propertyValue) && get_class($propertyValue) === 'stdClass';
+        return is_object($propertyValue) && get_class($propertyValue) === DateTime::class;
     }
 
     public function serialize(?object $object, $propertyName, $propertyValue): array
     {
-        $objectArray = [];
-
-        foreach (get_object_vars($propertyValue) as $key => $value) {
-            $objectArray[$key] = di_get(SerializeService::class)->serializeProperty($object, '', $value);
-        }
-
         return [
-            'type' => 'object',
-            'value' => $objectArray,
+            'type' => DateTime::class,
+            'value' => json_encode($propertyValue),
         ];
     }
 
     public function isResponsibleForDeserialization(?object $object, string $type, $value): bool
     {
-        return $type === 'object';
+        return $type === DateTime::class;
     }
 
     public function deserialize(?object $object, string $type, $value): object
     {
-        $object = [];
+        $rawObject = json_decode($value);
 
-        foreach ($value as $key => $rawValue) {
-            $object[$key] = di_get(FactoryService::class)->deserializeRawValue(null, $rawValue);
+        try {
+            return new DateTime($rawObject->date, new DateTimeZone($rawObject->timezone));
+        } catch (Exception $e) {
+            throw new SerializeException($e->getMessage(), $e->getCode(), $e);
         }
-
-        return (object) $object;
     }
 }

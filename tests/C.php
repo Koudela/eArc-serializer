@@ -4,7 +4,7 @@ namespace eArc\SerializerTests;
 
 class C
 {
-    protected $classReference;
+    protected D $classReference;
 
     public function __construct()
     {

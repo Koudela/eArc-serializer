@@ -22,7 +22,7 @@ class ClassDataType implements DataTypeInterface
         return is_object($propertyValue) && get_class($propertyValue) !== 'stdClass';
     }
 
-    public function serialize(?object $object, $propertyName, $propertyValue)
+    public function serialize(?object $object, $propertyName, $propertyValue): array
     {
         $objectHashService = di_get(ObjectHashService::class);
 

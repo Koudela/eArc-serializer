@@ -15,9 +15,9 @@ use eArc\Serializer\Services\Interfaces\ObjectHashServiceInterface;
 class ObjectHashService implements ObjectHashServiceInterface
 {
     /** @var bool[] */
-    protected $registeredIds;
+    protected array $registeredIds;
     /** @var object[] */
-    protected $referencedObjects;
+    protected array $referencedObjects;
 
     public function init(): void
     {

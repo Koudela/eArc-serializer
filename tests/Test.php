@@ -2,9 +2,11 @@
 
 namespace eArc\SerializerTests;
 
+use DateTime;
 use eArc\DI\DI;
 use eArc\Serializer\DataTypes\ArrayDataType;
 use eArc\Serializer\DataTypes\ClassDataType;
+use eArc\Serializer\DataTypes\DateTimeDataType;
 use eArc\Serializer\DataTypes\ObjectDataType;
 use eArc\Serializer\DataTypes\SimpleDataType;
 use eArc\Serializer\Api\Interfaces\SerializerInterface;
@@ -19,6 +21,7 @@ class Test extends TestCase
     public function init()
     {
         DI::init();
+        di_tag(DateTimeDataType::class, SerializerInterface::class);
         di_tag(SimpleDataType::class, SerializerInterface::class);
         di_tag(ArrayDataType::class, SerializerInterface::class);
         di_tag(ClassDataType::class, SerializerInterface::class);
@@ -70,7 +73,7 @@ class Test extends TestCase
         self::assertSame($value, $deserializedValue);
     }
 
-    public function TestFloatValue()
+    public function testFloatValue()
     {
         $this->init();
 
@@ -78,6 +81,16 @@ class Test extends TestCase
         $serializedValue = di_get(Serializer::class)->serialize($value);
         $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue);
         self::assertSame($value, $deserializedValue);
+    }
+
+    public function testDateTimeValue()
+    {
+        $this->init();
+
+        $value = new DateTime();
+        $serializedValue = di_get(Serializer::class)->serialize($value);
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue);
+        self::assertEquals($value, $deserializedValue);
     }
 
     public function testArrayValue()

@@ -35,10 +35,12 @@ Then register the data types to the serializer.
 ```php
 use eArc\Serializer\DataTypes\ArrayDataType;
 use eArc\Serializer\DataTypes\ClassDataType;
+use eArc\Serializer\DataTypes\DateTimeDataType;
 use eArc\Serializer\DataTypes\ObjectDataType;
 use eArc\Serializer\DataTypes\SimpleDataType;
 use eArc\Serializer\Api\Interfaces\SerializerInterface;
 
+di_tag(DateTimeDataType::class, SerializerInterface::class);
 di_tag(SimpleDataType::class, SerializerInterface::class);
 di_tag(ArrayDataType::class, SerializerInterface::class);
 di_tag(ClassDataType::class, SerializerInterface::class);
@@ -170,11 +172,18 @@ di_tag(YourDataType::class, SerializerInterface::class);
 
 ## releases
 
-### release v0.1
+### release v0.2
 not released yet
 - added serialize structures:
     - csv
 - data type can be prioritized
+
+### release v0.1
+
+- PHP 7.4
+- additional supported data types:
+    - DateTime
+- serialization of private properties of parents
 
 ### release v0.0
 

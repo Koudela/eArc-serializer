@@ -16,6 +16,7 @@ use eArc\Serializer\Exceptions\SerializeException;
 use eArc\Serializer\Services\Interfaces\SerializeServiceInterface;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionProperty;
 
 class SerializeService implements SerializeServiceInterface
 {
@@ -23,11 +24,23 @@ class SerializeService implements SerializeServiceInterface
     {
         $objectArray = [];
 
-        try {
-            $reflectionProperties = (new ReflectionClass($object))->getProperties();
-        } catch (ReflectionException $e) {
-            throw new SerializeException($e->getMessage(), $e->getCode(), $e);
+        $parent = get_class($object);
+
+        while ($parent = get_parent_class($parent)) {
+            try {
+                $reflectionProperties = (new ReflectionClass($parent))->getProperties(ReflectionProperty::IS_PRIVATE);
+            } catch (ReflectionException $e) {
+                throw new SerializeException($e->getMessage(), $e->getCode(), $e);
+            }
+            foreach ($reflectionProperties as $reflectionProperty) {
+                $reflectionProperty->setAccessible(true);
+                $propertyValue = $reflectionProperty->getValue($object);
+                $propertyName = $reflectionProperty->getName();
+                $objectArray[$propertyName] = $this->serializeProperty($object, $propertyName, $propertyValue);
+            }
         }
+
+        $reflectionProperties = (new ReflectionClass($object))->getProperties();
 
         foreach ($reflectionProperties as $reflectionProperty) {
             $reflectionProperty->setAccessible(true);
