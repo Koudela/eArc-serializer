@@ -20,7 +20,7 @@ use ReflectionProperty;
 
 class SerializeService implements SerializeServiceInterface
 {
-    public function getAsArray(object $object): array
+    public function getAsArray(object $object, ?array $runtimeDataTypes = null): array
     {
         $objectArray = [];
 
@@ -36,7 +36,7 @@ class SerializeService implements SerializeServiceInterface
                 $reflectionProperty->setAccessible(true);
                 $propertyValue = $reflectionProperty->getValue($object);
                 $propertyName = $reflectionProperty->getName();
-                $objectArray[$propertyName] = $this->serializeProperty($object, $propertyName, $propertyValue);
+                $objectArray[$propertyName] = $this->serializeProperty($object, $propertyName, $propertyValue, $runtimeDataTypes);
             }
         }
 
@@ -46,19 +46,27 @@ class SerializeService implements SerializeServiceInterface
             $reflectionProperty->setAccessible(true);
             $propertyValue = $reflectionProperty->getValue($object);
             $propertyName = $reflectionProperty->getName();
-            $objectArray[$propertyName] = $this->serializeProperty($object, $propertyName, $propertyValue);
+            $objectArray[$propertyName] = $this->serializeProperty($object, $propertyName, $propertyValue, $runtimeDataTypes);
         }
 
         return $objectArray;
     }
 
-    public function serializeProperty(?object $object, $propertyName, $propertyValue)
+    public function serializeProperty(?object $object, $propertyName, $propertyValue, ?array $runtimeDataTypes = null)
     {
+        if (!is_null($runtimeDataTypes)) {
+            foreach ($runtimeDataTypes as $className => $argument) {
+                $dataType = di_get($className);
+                if ($dataType->isResponsibleForSerialization($object, $propertyName, $propertyValue)) {
+                    return $dataType->serialize($object, $propertyName, $propertyValue, $runtimeDataTypes);
+                }
+            }
+        }
         /** @var DataTypeInterface $dataType */
         foreach (di_get_tagged(SerializerInterface::class) as $className => $argument) {
             $dataType = di_get($className);
             if ($dataType->isResponsibleForSerialization($object, $propertyName, $propertyValue)) {
-                return $dataType->serialize($object, $propertyName, $propertyValue);
+                return $dataType->serialize($object, $propertyName, $propertyValue, $runtimeDataTypes);
             }
         }
 

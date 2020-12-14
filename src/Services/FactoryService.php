@@ -21,13 +21,22 @@ use ReflectionProperty;
 
 class FactoryService implements FactoryServiceInterface
 {
-    public function deserializeProperty(?object $object, string $type, $value)
+    public function deserializeProperty(?object $object, string $type, $value, ?array $runtimeDataTypes = null)
     {
+        if (!is_null($runtimeDataTypes)) {
+            foreach ($runtimeDataTypes as $className => $argument) {
+                $dataType = di_get($className);
+                if ($dataType->isResponsibleForDeserialization($object, $type, $value)) {
+                    return $dataType->deserialize($object, $type, $value, $runtimeDataTypes);
+                }
+            }
+        }
+
         /** @var $dataType DataTypeInterface */
         foreach (di_get_tagged(SerializerInterface::class) as $className => $argument) {
             $dataType = di_get($className);
             if ($dataType->isResponsibleForDeserialization($object, $type, $value)) {
-                return $dataType->deserialize($object, $type, $value);
+                return $dataType->deserialize($object, $type, $value, $runtimeDataTypes);
             }
         }
 
@@ -46,7 +55,7 @@ class FactoryService implements FactoryServiceInterface
         }
     }
 
-    public function attachProperties(object $object, array $rawContent): object
+    public function attachProperties(object $object, array $rawContent, ?array $runtimeDataTypes = null): object
     {
         $parent = get_class($object);
 
@@ -56,7 +65,7 @@ class FactoryService implements FactoryServiceInterface
                 $name = $reflectionProperty->getName();
                 if (array_key_exists($name, $rawContent)) {
                     $reflectionProperty->setAccessible(true);
-                    $reflectionProperty->setValue($object, $this->deserializeRawValue($object, $rawContent[$name]));
+                    $reflectionProperty->setValue($object, $this->deserializeRawValue($object, $rawContent[$name], $runtimeDataTypes));
                 }
             }
         }
@@ -67,19 +76,19 @@ class FactoryService implements FactoryServiceInterface
             $name = $reflectionProperty->getName();
             if (array_key_exists($name, $rawContent)) {
                 $reflectionProperty->setAccessible(true);
-                $reflectionProperty->setValue($object, $this->deserializeRawValue($object, $rawContent[$name]));
+                $reflectionProperty->setValue($object, $this->deserializeRawValue($object, $rawContent[$name], $runtimeDataTypes));
             }
         }
 
         return $object;
     }
 
-    public function deserializeRawValue(?object $object, $rawValue)
+    public function deserializeRawValue(?object $object, $rawValue, ?array $runtimeDataTypes = null)
     {
         $type = is_array($rawValue) && array_key_exists('type', $rawValue) ? $rawValue['type'] : '';
         $value = is_array($rawValue) && array_key_exists('value', $rawValue) ? $rawValue['value'] : $rawValue;
 
-        return $this->deserializeProperty($object, $type, $value);
+        return $this->deserializeProperty($object, $type, $value, $runtimeDataTypes);
     }
 
     /**

@@ -21,13 +21,13 @@ class ArrayDataType implements DataTypeInterface
         return is_array($propertyValue);
     }
 
-    public function serialize(?object $object, $propertyName, $propertyValue): array
+    public function serialize(?object $object, $propertyName, $propertyValue, ?array $runtimeDataTypes = null): array
     {
         $serialized = [];
 
         /** @var array $propertyValue */
         foreach ($propertyValue as $key => $value) {
-            $serialized[$key] = di_get(SerializeService::class)->serializeProperty(null, $key, $value);
+            $serialized[$key] = di_get(SerializeService::class)->serializeProperty(null, $key, $value, $runtimeDataTypes);
         }
 
         return [
@@ -41,13 +41,13 @@ class ArrayDataType implements DataTypeInterface
         return $type === 'array';
     }
 
-    public function deserialize(?object $object, string $type, $value): array
+    public function deserialize(?object $object, string $type, $value, ?array $runtimeDataTypes = null): array
     {
         $deserialized = [];
 
         /** @var array $value */
         foreach ($value as $key => $val) {
-            $deserialized[$key] = di_get(FactoryService::class)->deserializeRawValue($object, $val);
+            $deserialized[$key] = di_get(FactoryService::class)->deserializeRawValue($object, $val, $runtimeDataTypes);
         }
 
         return $deserialized;

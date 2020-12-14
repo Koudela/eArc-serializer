@@ -23,7 +23,7 @@ class DateTimeDataType implements DataTypeInterface
         return is_object($propertyValue) && get_class($propertyValue) === DateTime::class;
     }
 
-    public function serialize(?object $object, $propertyName, $propertyValue): array
+    public function serialize(?object $object, $propertyName, $propertyValue, ?array $runtimeDataTypes = null): array
     {
         return [
             'type' => DateTime::class,
@@ -36,7 +36,7 @@ class DateTimeDataType implements DataTypeInterface
         return $type === DateTime::class;
     }
 
-    public function deserialize(?object $object, string $type, $value): object
+    public function deserialize(?object $object, string $type, $value, ?array $runtimeDataTypes = null): object
     {
         $rawObject = json_decode($value);
 

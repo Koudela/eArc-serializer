@@ -18,12 +18,13 @@ interface FactoryServiceInterface
      * @param object|null $object
      * @param string $type
      * @param int|float|string|array|null $value
+     * @param array|null $runtimeDataTypes
      *
      * @return int|float|string|array|object|null
      *
      * @throws SerializeExceptionInterface
      */
-    public function deserializeProperty(?object $object, string $type, $value);
+    public function deserializeProperty(?object $object, string $type, $value, ?array $runtimeDataTypes = null);
 
     /**
      * @param string $fQCN

@@ -17,21 +17,21 @@ use eArc\Serializer\Services\SerializeService;
 
 class Serializer implements SerializerInterface
 {
-    public function serialize($value): string
+    public function serialize($value, ?array $filter = null, ?array $runtimeDataTypes = null): string
     {
         di_get(ObjectHashService::class)->init();
 
-        $rawContent = di_get(SerializeService::class)->serializeProperty(null, '', $value);
+        $rawContent = di_get(SerializeService::class)->serializeProperty(null, '', $value, $runtimeDataTypes);
 
         return json_encode($rawContent);
     }
 
-    public function deserialize(string $serializedData)
+    public function deserialize(string $serializedData, ?array $filter = null, ?array $runtimeDataTypes = null)
     {
         $rawContent = json_decode($serializedData, true);
 
         di_get(ObjectHashService::class)->init();
 
-        return di_get(FactoryService::class)->deserializeRawValue(null, $rawContent);
+        return di_get(FactoryService::class)->deserializeRawValue(null, $rawContent, $runtimeDataTypes);
     }
 }

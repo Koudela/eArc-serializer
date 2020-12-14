@@ -16,21 +16,23 @@ interface SerializeServiceInterface
 {
     /**
      * @param object $object
+     * @param array|null $runtimeDataTypes
      *
      * @return array
      *
      * @throws SerializeExceptionInterface
      */
-    public function getAsArray(object $object): array;
+    public function getAsArray(object $object, ?array $runtimeDataTypes = null): array;
 
     /**
      * @param object|null $object
      * @param string|int $propertyName
      * @param int|float|string|array|object|null $propertyValue
+     * @param array|null $runtimeDataTypes
      *
      * @return int|float|string|array|null
      *
      * @throws SerializeExceptionInterface
      */
-    public function serializeProperty(?object $object, $propertyName, $propertyValue);
+    public function serializeProperty(?object $object, $propertyName, $propertyValue, ?array $runtimeDataTypes = null);
 }

@@ -19,7 +19,7 @@ class SimpleDataType implements DataTypeInterface
         return is_int($propertyValue) || is_string($propertyValue) || is_float($propertyValue) || is_bool($propertyValue) || is_null($propertyValue);
     }
 
-    public function serialize(?object $object, $propertyName, $propertyValue)
+    public function serialize(?object $object, $propertyName, $propertyValue, ?array $runtimeDataTypes = null)
     {
         return $propertyValue;
     }
@@ -29,7 +29,7 @@ class SimpleDataType implements DataTypeInterface
         return !$type;
     }
 
-    public function deserialize(?object $object, string $type, $value)
+    public function deserialize(?object $object, string $type, $value, ?array $runtimeDataTypes = null)
     {
         return $value;
     }
