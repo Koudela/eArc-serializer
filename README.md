@@ -6,7 +6,6 @@ Standalone lightweight extendable serializer component of the eArc libraries.
  
  - [installation](#installation)
  - [basic usage](#basic-usage)
- - [exceptions](#exceptions)
  - [advanced usage](#advanced-usage)
  - [releases](#releases)
    - [release v0.1](#release-v01)
@@ -14,7 +13,7 @@ Standalone lightweight extendable serializer component of the eArc libraries.
 
 ## installation
 
-Install the earc dependency injection library via composer.
+Install the earc serializer library via composer.
 
 ```
 $ composer require earc/serializer
@@ -47,6 +46,9 @@ di_tag(ClassDataType::class, SerializerInterface::class);
 di_tag(ObjectDataType::class, SerializerInterface::class);
 ```
 
+Note the order of tagging. If multiple DataTypes are applicable, the DataType 
+registered first is applied. 
+
 Now your ready to serialize some content.
 
 ```php
@@ -58,7 +60,7 @@ $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue);
 
 `$value` is the same as `$deserializedValue`.
 
-Not only the data type `object` is supported. Also `array`, `string`, `int`, 
+Not only the data type `object` is supported. Also `DateTime`, `array`, `string`, `int`, 
 `float`, `bool` and `null` values. 
 
 Even serialization of recursive object structures are possible.
