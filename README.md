@@ -7,7 +7,10 @@ Standalone lightweight extendable serializer component of the eArc libraries.
  - [installation](#installation)
  - [basic usage](#basic-usage)
  - [advanced usage](#advanced-usage)
+   - [filtering properties](#filtering-properties)
+   - [customizing serialization via specialized data types](#customizing-serialization-via-specialized-data-types)
  - [releases](#releases)
+   - [release v1.0](#release-v10)
    - [release v0.1](#release-v01)
    - [release v0.0](#release-v00)
 
@@ -29,26 +32,6 @@ use eArc\DI\DI;
 DI::init();
 ```
 
-Then register the data types to the serializer.
-
-```php
-use eArc\Serializer\DataTypes\ArrayDataType;
-use eArc\Serializer\DataTypes\ClassDataType;
-use eArc\Serializer\DataTypes\DateTimeDataType;
-use eArc\Serializer\DataTypes\ObjectDataType;
-use eArc\Serializer\DataTypes\SimpleDataType;
-use eArc\Serializer\Api\Interfaces\SerializerInterface;
-
-di_tag(DateTimeDataType::class, SerializerInterface::class);
-di_tag(SimpleDataType::class, SerializerInterface::class);
-di_tag(ArrayDataType::class, SerializerInterface::class);
-di_tag(ClassDataType::class, SerializerInterface::class);
-di_tag(ObjectDataType::class, SerializerInterface::class);
-```
-
-Note the order of tagging. If multiple DataTypes are applicable, the DataType 
-registered first is applied. 
-
 Now your ready to serialize some content.
 
 ```php
@@ -60,8 +43,8 @@ $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue);
 
 `$value` is the same as `$deserializedValue`.
 
-Not only the data type `object` is supported. Also `DateTime`, `array`, `string`, `int`, 
-`float`, `bool` and `null` values. 
+The data types `DateTime`, `object`, `array`, `string`, `int`,`float`, `bool` 
+and `null` values are supported by the default serialization type out of the box. 
 
 Even serialization of recursive object structures are possible.
 
@@ -128,29 +111,77 @@ the class `Z1`.
 
 ## advanced usage  
 
-The serializer can be extended by your own data types. Implement the 
-`DataTypeInterface`.
+The basic usage of the earc/serializer is not superior to the native php 
+`serialize/unserialize` function. You should use the earc/serializer only if you 
+need the advanced features.
+
+### filtering properties
+
+The earc/serializer offers an easy way to organize the filtering of properties.
+Extend the `SerializerDefaultType` and overwrite the `filterProperty()` method.
+Only if this method returns true the property will be serialized.
+
+```php
+use eArc\Serializer\SerializerTypes\SerializerDefaultType;
+
+class MySerializerType extends SerializerDefaultType
+{
+    public function filterProperty(string $fQCN, string $propertyName): bool
+    {
+        static $blacklistProperties = [
+            MyClass::class => [
+                'myPropertyOne' => true,
+                'anotherNotSerializedProperty' => true,
+            ],
+        ];
+
+        return !array_key_exists($fQCN, $blacklistProperties) 
+            && !array_key_exists($propertyName, $blacklistProperties[$fQCN]);
+    }
+}
+```
+
+To use this Filter use an object of the extending class as second argument.
+
+```php
+use eArc\Serializer\Api\Serializer;
+
+$serializerType = di_get(MySerializerType::class);
+
+$serializedValue = di_get(Serializer::class)->serialize($value, $serializerType);
+$deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, $serializerType);
+```
+
+### customizing serialization via specialized data types
+
+There are use cases where you need full control over the serialization process.
+For example in the case of further processing the serialized value or if your
+object/data needs a special processing prior serialization or post deserialization. 
+Specialized data types offer you this level of control while keeping your 
+architecture clean.
+
+To create your own data type implement the `DataTypeInterface`.
 
 ```php
 use eArc\Serializer\DataTypes\Interfaces\DataTypeInterface;
 
-class YourDataType implements DataTypeInterface
+class MyDataType implements DataTypeInterface
 {
     public function isResponsibleForSerialization(?object $object, $propertyName, $propertyValue): bool
     {
-        return is_subclass_of($propertyValue, YourInterface::class);
+        return is_subclass_of($propertyValue, MyObjectsClassOrInterface::class);
     }
 
     public function serialize(?object $object, $propertyName, $propertyValue)
     {
         return [
-            'type' => YourInterface::class,
+            'type' => MyObjectsClassOrInterface::class,
             'value' => 'Put your serialized Information here.',
         ];
     }
     public function isResponsibleForDeserialization(?object $object, string $type, $value): bool
     {
-        return $type === YourInterface::class;
+        return $type === MyObjectsClassOrInterface::class;
     }
 
     public function deserialize(?object $object, string $type, $value)
@@ -160,27 +191,62 @@ class YourDataType implements DataTypeInterface
 }
 ```
 
-You can use the `FactoryService`, `SerializeService` or the `ObjectHashService`
+Hint 1: `serialize()` can return anything that can be processed by the native php
+function `json_encode()`. If it is not an array or does not have the `type` and
+`value` keys the `$type` parameter will be an empty string and the `$value` 
+parameter will hold the serialized value.
+
+Hint 2: You can use the `FactoryService`, `SerializeService` or the `ObjectHashService`
 for specialized tasks.
 
-Don't forget to tag your `YourDataType` class as `SerializerInterface` before
-usage.
+To use the new data type you need a serializer type referencing the new data type.
+Either implement the `SerializerTypeInterface` or extend the `SerializerDefaultType`
+and overwrite the `getDataTypes()` method.
 
 ```php
-use eArc\Serializer\Api\Interfaces\SerializerInterface;
+use eArc\Serializer\SerializerTypes\SerializerDefaultType;
 
-di_tag(YourDataType::class, SerializerInterface::class);
+class MySerializerType extends SerializerDefaultType
+{
+    public function getDataTypes(): iterable
+    {
+        yield MyDataType::class => null;
+        
+        foreach (parent::getDataTypes() as $class => $object) {
+            yield $class => $object;
+        }
+    }
+}
 ```
+
+Note the order. If multiple data types are applicable, the data type placed first 
+is applied.
+
+Hint: If you need to build the `MyDataType` object by another dependency injection
+system than earc/di you can pass the object instead of `null`.
+
+To use the new serializer type instead of the default pass its object as second 
+argument to the serializer methods.
+
+```php
+use eArc\Serializer\Api\Serializer;
+
+$serializerType = di_get(MySerializerType::class);
+
+$serializedValue = di_get(Serializer::class)->serialize($value, $serializerType);
+$deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, $serializerType);
+```
+
+Hint: You can use your own dependency injection function (or container) to build 
+the serializer type object.
 
 ## releases
 
 ### release v1.0
-not released yet
-- SerializerTypes instead of tagged DataTypes TODO: Documentation
-- data type can be prioritized
-- Filter 
-- added serialize structures:
-    - csv
+
+- data types can be prioritized
+- serializer types passed as parameter instead of tagged data types
+- filter (whitelist or blacklist) properties
 
 ### release v0.1
 
@@ -202,8 +268,8 @@ first official release
     - int
     - bool
     - `null`
-- serializing structures:
-    - json
-- personalized data types
-- easy readable serialized output
+- customized data types
 - support for serialization of recursive object relations
+- easy readable serialized output
+- serializing structures:
+  - json
