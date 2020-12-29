@@ -11,8 +11,8 @@
 namespace eArc\Serializer\Services;
 
 use eArc\Serializer\DataTypes\Interfaces\DataTypeInterface;
-use eArc\Serializer\Api\Interfaces\SerializerInterface;
 use eArc\Serializer\Exceptions\SerializeException;
+use eArc\Serializer\SerializerTypes\Interfaces\SerializerTypeInterface;
 use eArc\Serializer\Services\Interfaces\SerializeServiceInterface;
 use ReflectionClass;
 use ReflectionException;
@@ -20,11 +20,12 @@ use ReflectionProperty;
 
 class SerializeService implements SerializeServiceInterface
 {
-    public function getAsArray(object $object, ?array $runtimeDataTypes = null): array
+    public function getAsArray(object $object, SerializerTypeInterface $serializerType): array
     {
         $objectArray = [];
 
         $parent = get_class($object);
+        $className = get_class($object);
 
         while ($parent = get_parent_class($parent)) {
             try {
@@ -33,40 +34,38 @@ class SerializeService implements SerializeServiceInterface
                 throw new SerializeException($e->getMessage(), $e->getCode(), $e);
             }
             foreach ($reflectionProperties as $reflectionProperty) {
-                $reflectionProperty->setAccessible(true);
-                $propertyValue = $reflectionProperty->getValue($object);
                 $propertyName = $reflectionProperty->getName();
-                $objectArray[$propertyName] = $this->serializeProperty($object, $propertyName, $propertyValue, $runtimeDataTypes);
+                if ($serializerType->filterProperty($className, $propertyName)) {
+                    $reflectionProperty->setAccessible(true);
+                    $propertyValue = $reflectionProperty->getValue($object);
+                    $objectArray[$propertyName] = $this->serializeProperty($object, $propertyName, $propertyValue, $serializerType);
+                }
             }
         }
 
         $reflectionProperties = (new ReflectionClass($object))->getProperties();
 
         foreach ($reflectionProperties as $reflectionProperty) {
-            $reflectionProperty->setAccessible(true);
-            $propertyValue = $reflectionProperty->getValue($object);
             $propertyName = $reflectionProperty->getName();
-            $objectArray[$propertyName] = $this->serializeProperty($object, $propertyName, $propertyValue, $runtimeDataTypes);
+            if ($serializerType->filterProperty($className, $propertyName)) {
+                $reflectionProperty->setAccessible(true);
+                $propertyValue = $reflectionProperty->getValue($object);
+                $objectArray[$propertyName] = $this->serializeProperty($object, $propertyName, $propertyValue, $serializerType);
+            }
         }
 
         return $objectArray;
     }
 
-    public function serializeProperty(?object $object, $propertyName, $propertyValue, ?array $runtimeDataTypes = null)
+    public function serializeProperty(?object $object, $propertyName, $propertyValue, SerializerTypeInterface $serializerType)
     {
-        if (!is_null($runtimeDataTypes)) {
-            foreach ($runtimeDataTypes as $className => $argument) {
-                $dataType = di_get($className);
-                if ($dataType->isResponsibleForSerialization($object, $propertyName, $propertyValue)) {
-                    return $dataType->serialize($object, $propertyName, $propertyValue, $runtimeDataTypes);
-                }
-            }
-        }
         /** @var DataTypeInterface $dataType */
-        foreach (di_get_tagged(SerializerInterface::class) as $className => $argument) {
-            $dataType = di_get($className);
+        foreach ($serializerType->getDataTypes() as $className => $dataType) {
+            if (is_null($dataType)) {
+                $dataType = di_get($className);
+            }
             if ($dataType->isResponsibleForSerialization($object, $propertyName, $propertyValue)) {
-                return $dataType->serialize($object, $propertyName, $propertyValue, $runtimeDataTypes);
+                return $dataType->serialize($object, $propertyName, $propertyValue, $serializerType);
             }
         }
 

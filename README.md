@@ -174,13 +174,13 @@ di_tag(YourDataType::class, SerializerInterface::class);
 
 ## releases
 
-### release v0.2
+### release v1.0
 not released yet
-- runtime DataTypes TODO: Documentation
-- Filter (blacklist, whitelist)
+- SerializerTypes instead of tagged DataTypes TODO: Documentation
+- data type can be prioritized
+- Filter 
 - added serialize structures:
     - csv
-- data type can be prioritized
 
 ### release v0.1
 

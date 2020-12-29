@@ -11,6 +11,7 @@
 namespace eArc\Serializer\Services\Interfaces;
 
 use eArc\Serializer\Exceptions\Interfaces\SerializeExceptionInterface;
+use eArc\Serializer\SerializerTypes\Interfaces\SerializerTypeInterface;
 
 interface FactoryServiceInterface
 {
@@ -18,13 +19,13 @@ interface FactoryServiceInterface
      * @param object|null $object
      * @param string $type
      * @param int|float|string|array|null $value
-     * @param array|null $runtimeDataTypes
+     * @param SerializerTypeInterface $serializerType
      *
      * @return int|float|string|array|object|null
      *
      * @throws SerializeExceptionInterface
      */
-    public function deserializeProperty(?object $object, string $type, $value, ?array $runtimeDataTypes = null);
+    public function deserializeProperty(?object $object, string $type, $value, SerializerTypeInterface $serializerType);
 
     /**
      * @param string $fQCN
@@ -38,10 +39,11 @@ interface FactoryServiceInterface
     /**
      * @param object $object
      * @param array $rawContent
+     * @param SerializerTypeInterface $serializerType
      *
      * @return object
      *
      * @throws SerializeExceptionInterface
      */
-    public function attachProperties(object $object, array $rawContent): object;
+    public function attachProperties(object $object, array $rawContent, SerializerTypeInterface $serializerType): object;
 }

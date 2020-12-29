@@ -10,6 +10,7 @@
 
 namespace eArc\Serializer\DataTypes;
 
+use eArc\Serializer\SerializerTypes\Interfaces\SerializerTypeInterface;
 use eArc\Serializer\Services\FactoryService;
 use eArc\Serializer\DataTypes\Interfaces\DataTypeInterface;
 use eArc\Serializer\Services\SerializeService;
@@ -21,12 +22,12 @@ class ObjectDataType implements DataTypeInterface
         return is_object($propertyValue) && get_class($propertyValue) === 'stdClass';
     }
 
-    public function serialize(?object $object, $propertyName, $propertyValue, ?array $runtimeDataTypes = null): array
+    public function serialize(?object $object, $propertyName, $propertyValue, SerializerTypeInterface $serializerType): array
     {
         $objectArray = [];
 
         foreach (get_object_vars($propertyValue) as $key => $value) {
-            $objectArray[$key] = di_get(SerializeService::class)->serializeProperty($object, '', $value, $runtimeDataTypes);
+            $objectArray[$key] = di_get(SerializeService::class)->serializeProperty($object, '', $value, $serializerType);
         }
 
         return [
@@ -40,12 +41,12 @@ class ObjectDataType implements DataTypeInterface
         return $type === 'object';
     }
 
-    public function deserialize(?object $object, string $type, $value, ?array $runtimeDataTypes = null): object
+    public function deserialize(?object $object, string $type, $value, SerializerTypeInterface $serializerType): object
     {
         $object = [];
 
         foreach ($value as $key => $rawValue) {
-            $object[$key] = di_get(FactoryService::class)->deserializeRawValue(null, $rawValue, $runtimeDataTypes);
+            $object[$key] = di_get(FactoryService::class)->deserializeRawValue(null, $rawValue, $serializerType);
         }
 
         return (object) $object;

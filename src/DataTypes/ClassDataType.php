@@ -10,6 +10,7 @@
 
 namespace eArc\Serializer\DataTypes;
 
+use eArc\Serializer\SerializerTypes\Interfaces\SerializerTypeInterface;
 use eArc\Serializer\Services\FactoryService;
 use eArc\Serializer\DataTypes\Interfaces\DataTypeInterface;
 use eArc\Serializer\Services\ObjectHashService;
@@ -22,7 +23,7 @@ class ClassDataType implements DataTypeInterface
         return is_object($propertyValue) && get_class($propertyValue) !== 'stdClass';
     }
 
-    public function serialize(?object $object, $propertyName, $propertyValue, ?array $runtimeDataTypes = null): array
+    public function serialize(?object $object, $propertyName, $propertyValue, SerializerTypeInterface $serializerType): array
     {
         $objectHashService = di_get(ObjectHashService::class);
 
@@ -32,7 +33,7 @@ class ClassDataType implements DataTypeInterface
         return [
             'type' => $isRegistered ? ObjectHashService::class : get_class($propertyValue),
             'value' => [
-                'content' => $isRegistered ? null : di_get(SerializeService::class)->getAsArray($propertyValue, $runtimeDataTypes),
+                'content' => $isRegistered ? null : di_get(SerializeService::class)->getAsArray($propertyValue, $serializerType),
                 'id' => $id,
             ],
         ];
@@ -42,7 +43,7 @@ class ClassDataType implements DataTypeInterface
         return class_exists($type);
     }
 
-    public function deserialize(?object $object, string $type, $value, ?array $runtimeDataTypes = null)
+    public function deserialize(?object $object, string $type, $value, SerializerTypeInterface $serializerType)
     {
         $objectHashService = di_get(ObjectHashService::class);
 
@@ -53,6 +54,6 @@ class ClassDataType implements DataTypeInterface
         $object = di_get(FactoryService::class)->initObject($type);
         $objectHashService->referenceObject($value['id'], $object);
 
-        return di_get(FactoryService::class)->attachProperties($object, $value['content'], $runtimeDataTypes);
+        return di_get(FactoryService::class)->attachProperties($object, $value['content'], $serializerType);
     }
 }

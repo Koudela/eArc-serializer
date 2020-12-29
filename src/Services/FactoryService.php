@@ -13,30 +13,23 @@ namespace eArc\Serializer\Services;
 use eArc\Serializer\DataTypes\Interfaces\DataTypeInterface;
 use eArc\Serializer\Exceptions\Interfaces\SerializeExceptionInterface;
 use eArc\Serializer\Exceptions\SerializeException;
+use eArc\Serializer\SerializerTypes\Interfaces\SerializerTypeInterface;
 use eArc\Serializer\Services\Interfaces\FactoryServiceInterface;
-use eArc\Serializer\Api\Interfaces\SerializerInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 
 class FactoryService implements FactoryServiceInterface
 {
-    public function deserializeProperty(?object $object, string $type, $value, ?array $runtimeDataTypes = null)
+    public function deserializeProperty(?object $object, string $type, $value, SerializerTypeInterface $serializerType)
     {
-        if (!is_null($runtimeDataTypes)) {
-            foreach ($runtimeDataTypes as $className => $argument) {
-                $dataType = di_get($className);
-                if ($dataType->isResponsibleForDeserialization($object, $type, $value)) {
-                    return $dataType->deserialize($object, $type, $value, $runtimeDataTypes);
-                }
-            }
-        }
-
         /** @var $dataType DataTypeInterface */
-        foreach (di_get_tagged(SerializerInterface::class) as $className => $argument) {
-            $dataType = di_get($className);
+        foreach ($serializerType->getDataTypes() as $className => $dataType) {
+            if (is_null($dataType)) {
+                $dataType = di_get($className);
+            }
             if ($dataType->isResponsibleForDeserialization($object, $type, $value)) {
-                return $dataType->deserialize($object, $type, $value, $runtimeDataTypes);
+                return $dataType->deserialize($object, $type, $value, $serializerType);
             }
         }
 
@@ -55,17 +48,21 @@ class FactoryService implements FactoryServiceInterface
         }
     }
 
-    public function attachProperties(object $object, array $rawContent, ?array $runtimeDataTypes = null): object
+    public function attachProperties(object $object, array $rawContent, SerializerTypeInterface $serializerType): object
     {
         $parent = get_class($object);
 
         while ($parent = get_parent_class($parent)) {
-            $reflectionProperties = (new ReflectionClass($parent))->getProperties(ReflectionProperty::IS_PRIVATE);
+            try {
+                $reflectionProperties = (new ReflectionClass($parent))->getProperties(ReflectionProperty::IS_PRIVATE);
+            } catch (ReflectionException $e) {
+                throw new SerializeException($e->getMessage(), $e->getCode(), $e);
+            }
             foreach ($reflectionProperties as $reflectionProperty) {
                 $name = $reflectionProperty->getName();
                 if (array_key_exists($name, $rawContent)) {
                     $reflectionProperty->setAccessible(true);
-                    $reflectionProperty->setValue($object, $this->deserializeRawValue($object, $rawContent[$name], $runtimeDataTypes));
+                    $reflectionProperty->setValue($object, $this->deserializeRawValue($object, $rawContent[$name], $serializerType));
                 }
             }
         }
@@ -76,19 +73,19 @@ class FactoryService implements FactoryServiceInterface
             $name = $reflectionProperty->getName();
             if (array_key_exists($name, $rawContent)) {
                 $reflectionProperty->setAccessible(true);
-                $reflectionProperty->setValue($object, $this->deserializeRawValue($object, $rawContent[$name], $runtimeDataTypes));
+                $reflectionProperty->setValue($object, $this->deserializeRawValue($object, $rawContent[$name], $serializerType));
             }
         }
 
         return $object;
     }
 
-    public function deserializeRawValue(?object $object, $rawValue, ?array $runtimeDataTypes = null)
+    public function deserializeRawValue(?object $object, $rawValue, SerializerTypeInterface $serializerType)
     {
         $type = is_array($rawValue) && array_key_exists('type', $rawValue) ? $rawValue['type'] : '';
         $value = is_array($rawValue) && array_key_exists('value', $rawValue) ? $rawValue['value'] : $rawValue;
 
-        return $this->deserializeProperty($object, $type, $value, $runtimeDataTypes);
+        return $this->deserializeProperty($object, $type, $value, $serializerType);
     }
 
     /**

@@ -13,25 +13,25 @@ namespace eArc\Serializer\DataTypes;
 use eArc\Serializer\DataTypes\Interfaces\DataTypeInterface;
 use eArc\Serializer\SerializerTypes\Interfaces\SerializerTypeInterface;
 
-class SimpleDataType implements DataTypeInterface
+class NativeDataType implements DataTypeInterface
 {
     public function isResponsibleForSerialization(?object $object, $propertyName, $propertyValue): bool
     {
-        return is_int($propertyValue) || is_string($propertyValue) || is_float($propertyValue) || is_bool($propertyValue) || is_null($propertyValue);
+        return true;
     }
 
     public function serialize(?object $object, $propertyName, $propertyValue, SerializerTypeInterface $serializerType)
     {
-        return $propertyValue;
+        return serialize($propertyValue);
     }
 
     public function isResponsibleForDeserialization(?object $object, string $type, $value): bool
     {
-        return !$type;
+        return true;
     }
 
     public function deserialize(?object $object, string $type, $value, SerializerTypeInterface $serializerType)
     {
-        return $value;
+        return unserialize($value);
     }
 }

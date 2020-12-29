@@ -4,13 +4,9 @@ namespace eArc\SerializerTests;
 
 use DateTime;
 use eArc\DI\DI;
-use eArc\Serializer\DataTypes\ArrayDataType;
-use eArc\Serializer\DataTypes\ClassDataType;
-use eArc\Serializer\DataTypes\DateTimeDataType;
-use eArc\Serializer\DataTypes\ObjectDataType;
-use eArc\Serializer\DataTypes\SimpleDataType;
-use eArc\Serializer\Api\Interfaces\SerializerInterface;
 use eArc\Serializer\Api\Serializer;
+use eArc\Serializer\SerializerTypes\Interfaces\SerializerTypeInterface;
+use eArc\Serializer\SerializerTypes\SerializerNativeType;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -18,36 +14,14 @@ use PHPUnit\Framework\TestCase;
  */
 class Test extends TestCase
 {
-    public function init(): void
-    {
-        di_tag(DateTimeDataType::class, SerializerInterface::class);
-        di_tag(SimpleDataType::class, SerializerInterface::class);
-        di_tag(ArrayDataType::class, SerializerInterface::class);
-        di_tag(ClassDataType::class, SerializerInterface::class);
-        di_tag(ObjectDataType::class, SerializerInterface::class);
-    }
-
-    public function getRuntimeDataTypes(): array
-    {
-        return [
-            DateTimeDataType::class => null,
-            SimpleDataType::class => null,
-            ArrayDataType::class => null,
-            ClassDataType::class => null,
-            ObjectDataType::class => null,
-        ];
-    }
-
     public function testNullValue()
     {
         DI::init();
 
         $value = null;
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $this->getRuntimeDataTypes());
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $this->getRuntimeDataTypes());
+        $serializedValue = di_get(Serializer::class)->serialize($value, di_get(SerializerNativeType::class));
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, di_get(SerializerNativeType::class));
         self::assertSame($value, $deserializedValue);
-
-        $this->init();
 
         $value = null;
         $serializedValue = di_get(Serializer::class)->serialize($value);
@@ -60,16 +34,14 @@ class Test extends TestCase
         DI::init();
 
         $value = true;
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $this->getRuntimeDataTypes());
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $this->getRuntimeDataTypes());
+        $serializedValue = di_get(Serializer::class)->serialize($value, di_get(SerializerNativeType::class));
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, di_get(SerializerNativeType::class));
         self::assertSame($value, $deserializedValue);
 
         $value = false;
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $this->getRuntimeDataTypes());
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $this->getRuntimeDataTypes());
+        $serializedValue = di_get(Serializer::class)->serialize($value, di_get(SerializerNativeType::class));
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, di_get(SerializerNativeType::class));
         self::assertSame($value, $deserializedValue);
-
-        $this->init();
 
         $value = true;
         $serializedValue = di_get(Serializer::class)->serialize($value);
@@ -87,11 +59,9 @@ class Test extends TestCase
         DI::init();
 
         $value = 42;
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $this->getRuntimeDataTypes());
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $this->getRuntimeDataTypes());
+        $serializedValue = di_get(Serializer::class)->serialize($value, di_get(SerializerNativeType::class));
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, di_get(SerializerNativeType::class));
         self::assertSame($value, $deserializedValue);
-
-        $this->init();
 
         $value = 42;
         $serializedValue = di_get(Serializer::class)->serialize($value);
@@ -104,11 +74,9 @@ class Test extends TestCase
         DI::init();
 
         $value = 'This is a string.';
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $this->getRuntimeDataTypes());
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $this->getRuntimeDataTypes());
+        $serializedValue = di_get(Serializer::class)->serialize($value, di_get(SerializerNativeType::class));
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, di_get(SerializerNativeType::class));
         self::assertSame($value, $deserializedValue);
-
-        $this->init();
 
         $value = 'This is a string.';
         $serializedValue = di_get(Serializer::class)->serialize($value);
@@ -121,11 +89,9 @@ class Test extends TestCase
         DI::init();
 
         $value = 4.209;
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $this->getRuntimeDataTypes());
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $this->getRuntimeDataTypes());
+        $serializedValue = di_get(Serializer::class)->serialize($value, di_get(SerializerNativeType::class));
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, di_get(SerializerNativeType::class));
         self::assertSame($value, $deserializedValue);
-
-        $this->init();
 
         $value = 4.209;
         $serializedValue = di_get(Serializer::class)->serialize($value);
@@ -138,11 +104,9 @@ class Test extends TestCase
         DI::init();
 
         $value = new DateTime();
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $this->getRuntimeDataTypes());
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $this->getRuntimeDataTypes());
+        $serializedValue = di_get(Serializer::class)->serialize($value, di_get(SerializerNativeType::class));
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, di_get(SerializerNativeType::class));
         self::assertEquals($value, $deserializedValue);
-
-        $this->init();
 
         $value = new DateTime();
         $serializedValue = di_get(Serializer::class)->serialize($value);
@@ -155,11 +119,9 @@ class Test extends TestCase
         DI::init();
 
         $value = [10 => 4.209, 42, 'key' => 'This is a string', ['next level' => [22, 23, 123]], null, new B()];
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $this->getRuntimeDataTypes());
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $this->getRuntimeDataTypes());
+        $serializedValue = di_get(Serializer::class)->serialize($value, di_get(SerializerNativeType::class));
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, di_get(SerializerNativeType::class));
         self::assertEquals($value, $deserializedValue);
-
-        $this->init();
 
         $value = [10 => 4.209, 42, 'key' => 'This is a string', ['next level' => [22, 23, 123]], null, new B()];
         $serializedValue = di_get(Serializer::class)->serialize($value);
@@ -171,8 +133,6 @@ class Test extends TestCase
     {
         DI::init();
 
-        $this->init();
-
         $value = (object) [10 => 4.209, 42, 'key' => 'This is a string', (object) ['next level' => (object) [22, 23, 123]], null, new B()];
         $serializedValue = di_get(Serializer::class)->serialize($value);
         $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue);
@@ -182,33 +142,47 @@ class Test extends TestCase
     public function testClassInstanceValue()
     {
         DI::init();
-        $this->processTestClassInstanceValue($this->getRuntimeDataTypes());
-        $this->init();
+        $this->processTestClassInstanceValue(di_get(SerializerNativeType::class));
         $this->processTestClassInstanceValue(null);
     }
 
-    public function processTestClassInstanceValue($runtimeDataTypes): void
+    public function processTestClassInstanceValue(?SerializerTypeInterface $serializerType): void
     {
         $value = new A();
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $runtimeDataTypes);
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $runtimeDataTypes);
+        $serializedValue = di_get(Serializer::class)->serialize($value, $serializerType);
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, $serializerType);
         self::assertEquals($value, $deserializedValue);
 
         $value = new B();
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $runtimeDataTypes);
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $runtimeDataTypes);
+        $serializedValue = di_get(Serializer::class)->serialize($value, $serializerType);
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, $serializerType);
         self::assertEquals($value, $deserializedValue);
         self::assertNotEquals(new A(), $deserializedValue);
 
         $value = new C();
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $runtimeDataTypes);
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $runtimeDataTypes);
+        $serializedValue = di_get(Serializer::class)->serialize($value, $serializerType);
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, $serializerType);
         self::assertEquals($value, $deserializedValue);
 
         $classE = new E();
         $value = ['a' => $classE, 'b' => $classE];
-        $serializedValue = di_get(Serializer::class)->serialize($value, null, $runtimeDataTypes);
-        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, null, $runtimeDataTypes);
+        $serializedValue = di_get(Serializer::class)->serialize($value, $serializerType);
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, $serializerType);
         self::assertSame($deserializedValue['a'], $deserializedValue['b']);
+    }
+
+    public function testSerializerTypeFilter()
+    {
+        DI::init();
+
+        $value = new A();
+        $serializedValue = di_get(Serializer::class)->serialize($value, di_get(TestSerializerType::class));
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, di_get(TestSerializerType::class));
+        self::assertEquals($value, $deserializedValue);
+
+        $value = new B();
+        $serializedValue = di_get(Serializer::class)->serialize($value, di_get(TestSerializerType::class));
+        $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, di_get(TestSerializerType::class));
+        self::assertNotEquals($value, $deserializedValue);
     }
 }

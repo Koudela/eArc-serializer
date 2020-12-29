@@ -11,6 +11,7 @@
 namespace eArc\Serializer\DataTypes\Interfaces;
 
 use eArc\Serializer\Exceptions\Interfaces\SerializeExceptionInterface;
+use eArc\Serializer\SerializerTypes\Interfaces\SerializerTypeInterface;
 
 interface DataTypeInterface
 {
@@ -27,13 +28,13 @@ interface DataTypeInterface
      * @param object|null $object
      * @param string|int $propertyName
      * @param int|float|string|array|object|null $propertyValue
-     * @param array|null $runtimeDataTypes
+     * @param SerializerTypeInterface $serializerType
      *
      * @return int|float|string|array|null
      *
      * @throws SerializeExceptionInterface
      */
-    public function serialize(?object $object, $propertyName, $propertyValue, ?array $runtimeDataTypes = null);
+    public function serialize(?object $object, $propertyName, $propertyValue, SerializerTypeInterface $serializerType);
 
     /**
      * @param object|null $object
@@ -48,11 +49,11 @@ interface DataTypeInterface
      * @param object|null $object
      * @param string $type
      * @param int|float|string|array|null $value
-     * @param array|null $runtimeDataTypes
+     * @param SerializerTypeInterface $serializerType
      *
      * @return int|float|string|array|object|null
      *
      * @throws SerializeExceptionInterface
      */
-    public function deserialize(?object $object, string $type, $value, ?array $runtimeDataTypes = null);
+    public function deserialize(?object $object, string $type, $value, SerializerTypeInterface $serializerType);
 }
