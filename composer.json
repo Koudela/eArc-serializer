@@ -20,7 +20,8 @@
     "autoload": {
         "psr-4" : {
             "eArc\\Serializer\\" : "src/",
-            "eArc\\SerializerTests\\" : "tests/"
+            "eArc\\SerializerTests\\" : "tests/",
+            "eArc\\SerializerExamples\\" : "examples/"
         }
     },
     "require-dev": {

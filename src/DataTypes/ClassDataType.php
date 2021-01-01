@@ -45,15 +45,24 @@ class ClassDataType implements DataTypeInterface
 
     public function deserialize(?object $object, string $type, $value, SerializerTypeInterface $serializerType)
     {
-        $objectHashService = di_get(ObjectHashService::class);
+        $id = is_array($value) && array_key_exists('id', $value) ? $value['id'] : null;
 
-        if ($object = $objectHashService->getReferencedObject($value['id'])) {
-            return $object;
+        if (!is_null($id)) {
+            $objectHashService = di_get(ObjectHashService::class);
+
+            if ($object = $objectHashService->getReferencedObject($id)) {
+                return $object;
+            }
         }
 
         $object = di_get(FactoryService::class)->initObject($type);
-        $objectHashService->referenceObject($value['id'], $object);
 
-        return di_get(FactoryService::class)->attachProperties($object, $value['content'], $serializerType);
+        if (!is_null($id)) {
+            $objectHashService->referenceObject($id, $object);
+        }
+
+        $content = is_array($value) && array_key_exists('content', $value) ? $value['content'] : $value;
+
+        return di_get(FactoryService::class)->attachProperties($object, $content, $serializerType);
     }
 }

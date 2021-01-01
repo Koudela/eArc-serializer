@@ -2,6 +2,9 @@
 
 Standalone lightweight extendable serializer component of the eArc libraries.
 
+Although it's a small library, it is very powerful. With just a few lines of code 
+you can use it to import entities from csv or map them to a bunch of sql-tables.
+
 ## table of contents
  
  - [installation](#installation)
@@ -9,6 +12,7 @@ Standalone lightweight extendable serializer component of the eArc libraries.
  - [advanced usage](#advanced-usage)
    - [filtering properties](#filtering-properties)
    - [customizing serialization via specialized data types](#customizing-serialization-via-specialized-data-types)
+   - [data mapping](#data-mapping)
  - [releases](#releases)
    - [release v1.0](#release-v10)
    - [release v0.1](#release-v01)
@@ -239,6 +243,12 @@ $deserializedValue = di_get(Serializer::class)->deserialize($serializedValue, $s
 
 Hint: You can use your own dependency injection function (or container) to build 
 the serializer type object.
+
+### data mapping
+
+You can use earc/serializer to do all kinds of data mapping, even if tables are
+involved. This includes mapping (nested) objects to csv or sql and back. Check
+the examples' folder to get an impression.
 
 ## releases
 
