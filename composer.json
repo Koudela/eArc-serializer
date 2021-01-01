@@ -3,7 +3,7 @@
     "description": "eArc - the explicit architecture framework - serializer component",
     "type": "library",
     "license": "MIT",
-    "version": "0.1",
+    "version": "1.0",
     "authors": [
         {
             "name": "Thomas Koudela",
