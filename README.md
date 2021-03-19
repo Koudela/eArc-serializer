@@ -14,6 +14,7 @@ you can use it to import entities from csv or map them to a bunch of sql-tables.
    - [customizing serialization via specialized data types](#customizing-serialization-via-specialized-data-types)
    - [data mapping](#data-mapping)
  - [releases](#releases)
+   - [release v1.1](#release-v11)
    - [release v1.0](#release-v10)
    - [release v0.1](#release-v01)
    - [release v0.0](#release-v00)
@@ -251,6 +252,10 @@ involved. This includes mapping (nested) objects to csv or sql and back. Check
 the examples' folder to get an impression.
 
 ## releases
+
+### release v1.1
+
+- PHP ^8.0 || ^7.4
 
 ### release v1.0
 

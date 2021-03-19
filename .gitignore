@@ -2,3 +2,5 @@
 composer.phar
 composer.lock
 /vendor/
+[tT][oO][dD][oO]*
+[lL][oO][cC][aA][lL]*
